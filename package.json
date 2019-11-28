@@ -7,11 +7,16 @@
     "test": "test"
   },
   "dependencies": {
-    "truffle": "^5.1.0"
+    "truffle": "^5.1.0",
+    "@truffle/hdwallet-provider": "^1.0.25"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "mocha": "^6.2.2"
+  },
   "scripts": {
-    "test": "mocha"
+    "test": "truffle test",
+    "debug": "mocha debug --require babel-core/register --require babel-polyfill --colors",
+    "compile": "truffle compile"
   },
   "repository": {
     "type": "git",
