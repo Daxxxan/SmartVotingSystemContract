@@ -2,21 +2,19 @@
   "name": "smartvotingsystemcontract",
   "version": "1.0.0",
   "description": "",
-  "main": "truffle-config.js",
-  "directories": {
-    "test": "test"
-  },
+  "main": "index.js",
   "dependencies": {
-    "truffle": "^5.1.0",
-    "@truffle/hdwallet-provider": "^1.0.25"
+    "ganache-cli": "^6.7.0",
+    "mocha": "^6.2.2",
+    "npm": "^6.13.1",
+    "solc": "^0.4.25",
+    "truffle": "^5.1.2",
+    "web3": "^1.2.4"
   },
-  "devDependencies": {
-    "mocha": "^6.2.2"
-  },
+  "devDependencies": {},
   "scripts": {
-    "test": "truffle test",
-    "debug": "mocha debug --require babel-core/register --require babel-polyfill --colors",
-    "compile": "truffle compile"
+    "test": "mocha",
+    "truffle test": "truffle test"
   },
   "repository": {
     "type": "git",
