@@ -109,7 +109,7 @@ contract VotingSystem {
         return _ballot.state == State.ENCLOSED;
     }
 
-    function addCandidate(bytes32 _ballotName, bytes32 _candidateName) public ballotExists(_ballotName) isNotAlreadyCandidate(_ballotName, _candidateName) {
+    function addCandidate(bytes32 _ballotName, bytes32 _candidateName) public ballotExists(_ballotName) isNotAlreadyCandidate(_ballotName, _candidateName) isState(_ballotName, State.CREATED) {
         Ballot storage _ballot = getStorageBallot(_ballotName);
         _ballot.candidatesName.push(_candidateName);
     }

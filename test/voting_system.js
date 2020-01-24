@@ -156,6 +156,23 @@ contract("VotingSystem", async function (_accounts) {
             let _ballotCandidates = await getBallotCandidates(_ballotName);
             assert.isTrue(_ballotCandidates.length === 2);
         });
+
+        it('Opened ballot should not allow candidate inscription', async function () {
+            let _ballotName = 'erojiger';
+            let _candidateName = 'opkmazmj';
+            await createBallot(_ballotName, _accounts[0]);
+            await openBallotVotes(_ballotName);
+            truffleAssert.reverts(addCandidateToBallot(_ballotName, _candidateName));
+        });
+
+        it('Enclosed ballot should not allow candidate inscription', async function () {
+            let _ballotName = 'erojigezefr';
+            let _candidateName = 'opkmazmeeej';
+            await createBallot(_ballotName, _accounts[0]);
+            await openBallotVotes(_ballotName);
+            await closeBallotVotes(_ballotName);
+            truffleAssert.reverts(addCandidateToBallot(_ballotName, _candidateName));
+        });
     });
 
     async function createBallot(_ballotName, _ballotOwner) {
