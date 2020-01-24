@@ -122,6 +122,12 @@ contract("VotingSystem", async function (_accounts) {
     });
 
     describe('Candidates', function () {
+        it('Add candidate on unknown ballot should not work', async function () {
+            let _ballotName = 'ioejrgojerigojoeigjr';
+            let _candidateName = 'oiejrgoijergioj';
+            truffleAssert.reverts(addCandidateToBallot(_ballotName, _candidateName));
+        });
+
         it('Add candidate on ballot', async function () {
             let _ballotName = 'oneroegr';
             await createBallot(_ballotName, _accounts[0]);
@@ -135,23 +141,21 @@ contract("VotingSystem", async function (_accounts) {
         it('Add candidate twice should not work', async function () {
             let _ballotName = 'rjeigoerg';
             await createBallot(_ballotName, _accounts[0]);
-            let _candidateName = 'eirho';
+            let _candidateName = 'hhh';
             await addCandidateToBallot(_ballotName, _candidateName);
-            await addCandidateToBallot(_ballotName, _candidateName);
-
-            let _ballotCandidates = await getBallotCandidates(_ballotName);
             truffleAssert.reverts(addCandidateToBallot(_ballotName, _candidateName));
-            // assert.isTrue(false);
+        });
 
-        })
-    });
-
-    it('test', async function () {
-       let a = web3.utils.stringToHex("hello world");
-       let b = web3.utils.stringToHex("hello world");
-       let result = await instance.testEquality(a, b);
-
-       assert.isTrue(result);
+        it('Add two different candidates should work', async function () {
+            let _ballotName = 'regh';
+            await createBallot(_ballotName, _accounts[0]);
+            let _candidateName = 'ezeez';
+            let _candidateName2 = 'ezeezoooo';
+            await addCandidateToBallot(_ballotName, _candidateName);
+            await addCandidateToBallot(_ballotName, _candidateName2);
+            let _ballotCandidates = await getBallotCandidates(_ballotName);
+            assert.isTrue(_ballotCandidates.length === 2);
+        });
     });
 
     async function createBallot(_ballotName, _ballotOwner) {

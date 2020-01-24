@@ -44,9 +44,14 @@ contract VotingSystem {
 
     modifier isNotAlreadyCandidate(bytes32 _ballotName, bytes32 _candidateName) {
         Ballot memory _ballot = getBallotByName(_ballotName);
+        bool candidateExists = false;
         for(uint i = 0; i < _ballot.candidatesName.length; i++) {
-            require(_ballot.candidatesName[i] !=_candidateName );
+            if(_ballot.candidatesName[i] == _candidateName) {
+                candidateExists = true;
+            }
         }
+
+        require(!candidateExists);
         _;
     }
 
@@ -104,12 +109,8 @@ contract VotingSystem {
         return _ballot.state == State.ENCLOSED;
     }
 
-    function addCandidate(bytes32 _ballotName, bytes32 _candidateName) public ballotExists(_ballotName) isNotAlreadyCandidate(_ballotName, _candidateName){
+    function addCandidate(bytes32 _ballotName, bytes32 _candidateName) public ballotExists(_ballotName) isNotAlreadyCandidate(_ballotName, _candidateName) {
         Ballot storage _ballot = getStorageBallot(_ballotName);
         _ballot.candidatesName.push(_candidateName);
-    }
-
-    function testEquality(bytes32 a, bytes32 b) public pure returns (bool) {
-        return a == b;
     }
 }
