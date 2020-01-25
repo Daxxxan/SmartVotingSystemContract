@@ -175,33 +175,82 @@ contract("VotingSystem", async function (_accounts) {
         });
     });
 
-    describe('Candidates results', function () {
-        it('Get candidates result on single candidate with no votes', async function () {
-            let _ballotName = 'eroeeeeeer';
-            let _candidateName = 'opkmazmemmmm';
-            await createBallot(_ballotName, _accounts[0]);
-            await addCandidateToBallot(_ballotName, _candidateName);
-            let results = await getBallotCandidatesResult(_ballotName);
-            assert.isTrue(results.length === 1);
-            assertCandidateResult(results[0], _candidateName, 0);
+    describe('Vote', function () {
+        describe('Vote', function () {
+            it('Vote on opened ballot and single candidate should work', async function () {
+                let _ballotName = "reigoeg";
+                let _candidateName = "eirgoj";
+                await createBallot(_ballotName, _accounts[0]);
+                await addCandidateToBallot(_ballotName, _candidateName);
+                await openBallotVotes(_ballotName);
+                await vote(_ballotName, _candidateName, _accounts[1]);
+                let ballot = await getBallot(_ballotName);
+                let results = await getBallotCandidatesResult(_ballotName);
+                assert.strictEqual(results.length, 1);
+                assertCandidateResult(results[0], _candidateName, 1);
+            });
+
+            it('Vote on unknown ballot should not work', async function () {
+                let _ballotName = "rigojier";
+                let _candidateName = "erlgjpoegr";
+                truffleAssert.reverts(vote(_ballotName, _candidateName, _accounts[1]));
+            });
+
+            it('Vote on existing ballot but unknown candidate should not work', async function () {
+                let _ballotName = "rigojier";
+                let _candidateName = "erlgjpoegr";
+                await createBallot(_ballotName);
+                await openBallotVotes(_ballotName);
+                truffleAssert.reverts(vote(_ballotName, _candidateName, _accounts[1]));
+            });
+
+            it('Vote on created ballot should not work', async function () {
+                let _ballotName = "rigojier";
+                let _candidateName = "erlgjpoegr";
+                await createBallot(_ballotName);
+                await addCandidateToBallot(_ballotName, _candidateName);
+                truffleAssert.reverts(vote(_ballotName, _candidateName, _accounts[1]));
+            });
+
+            it('Vote on closed ballot should not work', async function () {
+                let _ballotName = "rigojier";
+                let _candidateName = "erlgjpoegr";
+                await createBallot(_ballotName);
+                await addCandidateToBallot(_ballotName, _candidateName);
+                await openBallotVotes(_ballotName);
+                await closeBallotVotes(_ballotName);
+                truffleAssert.reverts(vote(_ballotName, _candidateName, _accounts[1]));
+            });
         });
 
-        it('Get candidates result on two candidates with no votes', async function () {
-            let _ballotName = 'eroeeeeeer';
-            let _candidateName = 'opkmazmemmmm';
-            let _candidateName2 = 'aozpjoi';
-            await createBallot(_ballotName, _accounts[0]);
-            await addCandidateToBallot(_ballotName, _candidateName);
-            await addCandidateToBallot(_ballotName, _candidateName2);
-            let results = await getBallotCandidatesResult(_ballotName);
-            assert.isTrue(results.length === 2);
-            assertCandidateResult(results[0], _candidateName, 0);
-            assertCandidateResult(results[1], _candidateName2, 0);
-        });
+        describe('Candidates results', function () {
+            it('Get candidates result on single candidate with no votes', async function () {
+                let _ballotName = 'eroeeeeeer';
+                let _candidateName = 'opkmazmemmmm';
+                await createBallot(_ballotName, _accounts[0]);
+                await addCandidateToBallot(_ballotName, _candidateName);
+                let results = await getBallotCandidatesResult(_ballotName);
+                assert.isTrue(results.length === 1);
+                assertCandidateResult(results[0], _candidateName, 0);
+            });
 
-        it('Get candidates result on unknown ballot should not work', async function () {
-            let _ballotName = 'eroegllg';
-            truffleAssert.reverts(getBallotCandidatesResult(_ballotName));
+            it('Get candidates result on two candidates with no votes', async function () {
+                let _ballotName = 'eroeeeeeer';
+                let _candidateName = 'opkmazmemmmm';
+                let _candidateName2 = 'aozpjoi';
+                await createBallot(_ballotName, _accounts[0]);
+                await addCandidateToBallot(_ballotName, _candidateName);
+                await addCandidateToBallot(_ballotName, _candidateName2);
+                let results = await getBallotCandidatesResult(_ballotName);
+                assert.isTrue(results.length === 2);
+                assertCandidateResult(results[0], _candidateName, 0);
+                assertCandidateResult(results[1], _candidateName2, 0);
+            });
+
+            it('Get candidates result on unknown ballot should not work', async function () {
+                let _ballotName = 'eroegllg';
+                truffleAssert.reverts(getBallotCandidatesResult(_ballotName));
+            });
         });
     });
 
@@ -259,6 +308,12 @@ contract("VotingSystem", async function (_accounts) {
     async function getBallotCandidatesName(_ballotName) {
         let ballot = await getBallot(_ballotName);
         return ballot.candidatesName.map(candidate => web3.utils.hexToString(candidate))
+    }
+
+    async function vote(_ballotName, _candidateName, _voter) {
+        let bytes32BallotName = convertStringToBytes32(_ballotName);
+        let bytes32CandidateName = convertStringToBytes32(_candidateName);
+        return await instance.voteForCandidate(bytes32BallotName, bytes32CandidateName, { from: _voter });
     }
 
     async function getBallotCandidatesResult(_ballotName) {

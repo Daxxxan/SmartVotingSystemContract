@@ -26,6 +26,7 @@ contract VotingSystem {
         State state;
         address owner;
         bytes32[] candidatesName;
+        address[] voters;
     }
 
     bytes32[] ballots;
@@ -57,13 +58,28 @@ contract VotingSystem {
         _;
     }
 
+    modifier didntVote(bytes32 _ballotName) {
+        Ballot memory _ballot = getBallotByName(_ballotName);
+        bool hasAlreadyVoted = false;
+
+        for(uint i = 0; i < _ballot.voters.length; i++) {
+            if(_ballot.voters[i] == msg.sender) {
+                hasAlreadyVoted = true;
+            }
+        }
+
+        require(!hasAlreadyVoted);
+        _;
+    }
+
     function createBallot(bytes32 _ballotName) public {
         Ballot memory _newBallot = Ballot({
             name : _ballotName,
             state : State.CREATED,
             owner : msg.sender,
-            candidatesName : new bytes32[](0)
-            });
+            candidatesName : new bytes32[](0),
+            voters : new address[](0)
+        });
 
         ballots.push(_ballotName);
         ballotMapping[_ballotName] = _newBallot;
@@ -130,7 +146,8 @@ contract VotingSystem {
         return _candidates;
     }
 
-    function vote(bytes32 _ballotName, bytes32 _candidateName) public ballotExists(_ballotName) isCandidate(_ballotName, _candidateName) isState(_ballotName, State.OPENED) {
+    function voteForCandidate(bytes32 _ballotName, bytes32 _candidateName) public ballotExists(_ballotName) isCandidate(_ballotName, _candidateName) isState(_ballotName, State.OPENED) didntVote(_ballotName) {
         candidatesMapping[_ballotName][_candidateName].vote += 1;
+        getStorageBallot(_ballotName).voters.push(msg.sender);
     }
 }
