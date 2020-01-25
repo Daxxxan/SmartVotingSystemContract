@@ -120,7 +120,17 @@ contract VotingSystem {
         candidatesMapping[_ballotName][_candidateName].vote = 0;
     }
 
+    function getCandidatesResult(bytes32 _ballotName) public view ballotExists(_ballotName) returns (Candidate[] memory) {
+        Ballot memory _ballot = getBallotByName(_ballotName);
+        Candidate[] memory _candidates = new Candidate[](_ballot.candidatesName.length);
+        for(uint i = 0; i < _ballot.candidatesName.length; i++) {
+            _candidates[i] = candidatesMapping[_ballotName][_ballot.candidatesName[i]];
+        }
+
+        return _candidates;
+    }
+
     function vote(bytes32 _ballotName, bytes32 _candidateName) public ballotExists(_ballotName) isCandidate(_ballotName, _candidateName) isState(_ballotName, State.OPENED) {
-        Ballot storage _ballot = getStorageBallot(_ballotName);
+        candidatesMapping[_ballotName][_candidateName].vote += 1;
     }
 }

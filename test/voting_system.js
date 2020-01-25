@@ -175,6 +175,41 @@ contract("VotingSystem", async function (_accounts) {
         });
     });
 
+    describe('Candidates results', function () {
+        it('Get candidates result on single candidate with no votes', async function () {
+            let _ballotName = 'eroeeeeeer';
+            let _candidateName = 'opkmazmemmmm';
+            await createBallot(_ballotName, _accounts[0]);
+            await addCandidateToBallot(_ballotName, _candidateName);
+            let results = await getBallotCandidatesResult(_ballotName);
+            assert.isTrue(results.length === 1);
+            assertCandidateResult(results[0], _candidateName, 0);
+        });
+
+        it('Get candidates result on two candidates with no votes', async function () {
+            let _ballotName = 'eroeeeeeer';
+            let _candidateName = 'opkmazmemmmm';
+            let _candidateName2 = 'aozpjoi';
+            await createBallot(_ballotName, _accounts[0]);
+            await addCandidateToBallot(_ballotName, _candidateName);
+            await addCandidateToBallot(_ballotName, _candidateName2);
+            let results = await getBallotCandidatesResult(_ballotName);
+            assert.isTrue(results.length === 2);
+            assertCandidateResult(results[0], _candidateName, 0);
+            assertCandidateResult(results[1], _candidateName2, 0);
+        });
+
+        it('Get candidates result on unknown ballot should not work', async function () {
+            let _ballotName = 'eroegllg';
+            truffleAssert.reverts(getBallotCandidatesResult(_ballotName));
+        });
+    });
+
+    function assertCandidateResult(_candidate, _name, _vote) {
+        assert.strictEqual(_candidate.name, _name);
+        assert.strictEqual(_candidate.vote, _vote);
+    }
+
     async function createBallot(_ballotName, _ballotOwner) {
         let bytes32Name = convertStringToBytes32(_ballotName);
         await instance.createBallot(bytes32Name, {from: _ballotOwner});
@@ -224,6 +259,16 @@ contract("VotingSystem", async function (_accounts) {
     async function getBallotCandidatesName(_ballotName) {
         let ballot = await getBallot(_ballotName);
         return ballot.candidatesName.map(candidate => web3.utils.hexToString(candidate))
+    }
+
+    async function getBallotCandidatesResult(_ballotName) {
+        let bytes32Name = convertStringToBytes32(_ballotName);
+        let results = await instance.getCandidatesResult(bytes32Name);
+        for (let i = 0; i < results.length; i++) {
+            results[i].name = web3.utils.hexToString(results[i].name);
+            results[i].vote = parseInt(results[i].vote);
+        }
+        return results;
     }
 
     function getBallotName(_ballot) {
