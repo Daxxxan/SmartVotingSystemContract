@@ -134,7 +134,7 @@ contract("VotingSystem", async function (_accounts) {
             let _candidateName = 'candidate1';
             await addCandidateToBallot(_ballotName, _candidateName);
 
-            let _ballotCandidates = await getBallotCandidates(_ballotName);
+            let _ballotCandidates = await getBallotCandidatesName(_ballotName);
             assert.isTrue(_ballotCandidates.length === 1 && _ballotCandidates.includes(_candidateName));
         });
 
@@ -153,7 +153,7 @@ contract("VotingSystem", async function (_accounts) {
             let _candidateName2 = 'ezeezoooo';
             await addCandidateToBallot(_ballotName, _candidateName);
             await addCandidateToBallot(_ballotName, _candidateName2);
-            let _ballotCandidates = await getBallotCandidates(_ballotName);
+            let _ballotCandidates = await getBallotCandidatesName(_ballotName);
             assert.isTrue(_ballotCandidates.length === 2);
         });
 
@@ -221,7 +221,7 @@ contract("VotingSystem", async function (_accounts) {
         return await instance.addCandidate(bytes32BallotName, bytes32CandidateName);
     }
 
-    async function getBallotCandidates(_ballotName) {
+    async function getBallotCandidatesName(_ballotName) {
         let ballot = await getBallot(_ballotName);
         return ballot.candidatesName.map(candidate => web3.utils.hexToString(candidate))
     }

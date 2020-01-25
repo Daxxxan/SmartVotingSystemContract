@@ -16,6 +16,11 @@ contract VotingSystem {
         bool exists;
     }
 
+    struct Candidate {
+        bytes32 name;
+        uint vote;
+    }
+
     struct Ballot {
         bytes32 name;
         State state;
@@ -25,6 +30,7 @@ contract VotingSystem {
 
     Ballot[] public ballots;
     mapping(bytes32 => BallotExistence) ballotMapping;
+    mapping(bytes32 => mapping(bytes32 => Candidate)) candidatesMapping;
 
     modifier ballotExists(bytes32 _ballotName) {
         BallotExistence memory existence = ballotMapping[_ballotName];
@@ -43,15 +49,12 @@ contract VotingSystem {
     }
 
     modifier isNotAlreadyCandidate(bytes32 _ballotName, bytes32 _candidateName) {
-        Ballot memory _ballot = getBallotByName(_ballotName);
-        bool candidateExists = false;
-        for(uint i = 0; i < _ballot.candidatesName.length; i++) {
-            if(_ballot.candidatesName[i] == _candidateName) {
-                candidateExists = true;
-            }
-        }
+        require(!isBallotCandidate(_ballotName, _candidateName));
+        _;
+    }
 
-        require(!candidateExists);
+    modifier isCandidate(bytes32 _ballotName, bytes32 _candidateName) {
+        require(isBallotCandidate(_ballotName, _candidateName));
         _;
     }
 
@@ -109,8 +112,26 @@ contract VotingSystem {
         return _ballot.state == State.ENCLOSED;
     }
 
+    function isBallotCandidate(bytes32 _ballotName, bytes32 _candidateName) internal view returns (bool) {
+        Ballot memory _ballot = getBallotByName(_ballotName);
+        bool candidateExists = false;
+        for(uint i = 0; i < _ballot.candidatesName.length; i++) {
+            if(_ballot.candidatesName[i] == _candidateName) {
+                candidateExists = true;
+            }
+        }
+
+        return candidateExists;
+    }
+
     function addCandidate(bytes32 _ballotName, bytes32 _candidateName) public ballotExists(_ballotName) isNotAlreadyCandidate(_ballotName, _candidateName) isState(_ballotName, State.CREATED) {
         Ballot storage _ballot = getStorageBallot(_ballotName);
         _ballot.candidatesName.push(_candidateName);
+        candidatesMapping[_ballotName][_candidateName].name = _candidateName;
+        candidatesMapping[_ballotName][_candidateName].vote = 0;
+    }
+
+    function vote(bytes32 _ballotName, bytes32 _candidateName) public ballotExists(_ballotName) isCandidate(_ballotName, _candidateName) isState(_ballotName, State.OPENED) {
+        Ballot storage _ballot = getStorageBallot(_ballotName);
     }
 }
